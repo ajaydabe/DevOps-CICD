@@ -1,5 +1,7 @@
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr_block
+  enable_dns_support = true
+  enable_dns_hostnames = true
   tags = {
     Name = "My VPC"
   }
@@ -9,7 +11,6 @@ resource "aws_subnet" "public" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.public_subnet_cidr_block
   availability_zone = "us-east-1a"
-
   tags = {
     Name = "Public Subnet"
   }
@@ -24,18 +25,16 @@ resource "aws_internet_gateway" "gateway" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gateway.id
+  }
   tags = {
     Name = "Public Route Table"
   }
 }
 
-resource "aws_route" "public_internet_route" {
-  route_table_id = aws_route_table.public.id
-  cidr_block     = "0.0.0.0/0"
-  gateway_id     = aws_internet_gateway.gateway.id
-}
-
-resource "aws_subnet_association" "public_route_table" {
+resource "aws_route_table_association" "public_route_table" {
   subnet_id = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
@@ -46,7 +45,6 @@ resource "aws_instance" "webserver" {
   instance_type = var.instance_type
   vpc_security_group_ids = [aws_security_group.webserver.id]
   subnet_id     = aws_subnet.public.id
-
   tags = {
     Name = "Web Server ${count.index + 1}"
   }
@@ -62,11 +60,10 @@ resource "aws_security_group" "webserver" {
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  egress {
-    from_port = 0
-    to_port   = 0
-    protocol = "-1"
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
