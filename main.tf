@@ -53,6 +53,7 @@ resource "aws_instance" "webserver" {
 resource "aws_security_group" "webserver" {
   name = "webserver-sg"
   description = "Security group for web servers"
+  vpc_id = aws_vpc.main.id
 
   ingress {
     from_port = 22
