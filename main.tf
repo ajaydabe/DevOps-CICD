@@ -70,5 +70,3 @@ resource "aws_security_group" "webserver" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-output "public_ip"
