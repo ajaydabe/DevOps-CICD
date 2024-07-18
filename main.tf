@@ -43,6 +43,7 @@ resource "aws_instance" "webserver" {
   count = 4
   ami           = var.ami
   instance_type = var.instance_type
+  associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.webserver.id]
   subnet_id     = aws_subnet.public.id
   tags = {
